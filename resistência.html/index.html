@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Resistance - Jogo de Dedução Social</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>🕵️ The Resistance</h1>
+
+        <!-- Tela de Configuração -->
+        <div id="setup-screen" class="screen">
+            <h2>Configurar Jogo</h2>
+
+            <!-- Botão de Regras -->
+            <button id="toggle-rules-btn" onclick="toggleRules()" style="background: #3498db; margin-bottom: 20px;">
+                Mostrar Regras 📖
+            </button>
+
+            <!-- Seção de Regras -->
+            <div id="rules-section"
+                style="display: none; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: left;">
+                <h3>📜 Regras do Jogo</h3>
+
+                <h4>🎯 Objetivo:</h4>
+                <p><strong>Resistência:</strong> Completar 3 missões com sucesso.</p>
+                <p><strong>Espiões:</strong> Fazer 3 missões falharem OU rejeitar 5 equipes seguidas.</p>
+
+                <h4>🔄 Fluxo do Jogo:</h4>
+                <ol>
+                    <li><strong>Distribuição de Papéis:</strong> Cada jogador recebe seu papel secretamente.</li>
+                    <li><strong>Escolha da Equipe:</strong> O líder escolhe jogadores para a missão.</li>
+                    <li><strong>Votação da Equipe:</strong> Todos votam secretamente se aprovam a equipe.</li>
+                    <li><strong>Missão:</strong> Membros da equipe votam secretamente Sucesso ou Fracasso.</li>
+                    <li><strong>Resultado:</strong> Missão bem-sucedida (Resistência) ou fracassada (Espiões).</li>
+                </ol>
+
+                <h4>👥 Papéis Especiais (7+ jogadores):</h4>
+                <ul>
+                    <li><strong>👑 Comandante:</strong> Sabe quem são os espiões. Se descoberto, Resistência perde.</li>
+                    <li><strong>💂 Guarda-Costas:</strong> Sabe quem é o Comandante e o protege.</li>
+                    <li><strong>🎭 Falso Comandante:</strong> Espião que se passa por Comandante.</li>
+                </ul>
+
+                <h4>⚠️ Importante:</h4>
+                <ul>
+                    <li>Não mostre sua tela para outros jogadores.</li>
+                    <li>Passe o celular para cada jogador em segredo.</li>
+                    <li>Discutam e tentem descobrir quem são os espiões!</li>
+                </ul>
+            </div>
+
+            <div class="setup-form">
+                <label>Número de Jogadores (5-10):</label>
+                <input type="number" id="player-count" min="5" max="10" value="5">
+
+                <label>Número de Espiões (<span id="min-spies">2</span>-<span id="max-spies">2</span>):</label>
+                <input type="number" id="num-spies" min="2" max="2" value="2">
+
+                <div id="player-names"></div>
+
+                <div style="margin: 20px 0;">
+                    <label>
+                        <input type="checkbox" id="use-special-roles" onchange="toggleSpecialRoles()">
+                        Usar Papéis Especiais
+                    </label>
+                    <small style="color: #a0a0a0; display: block;">Disponível apenas com 7+ jogadores</small>
+                </div>
+
+                <div id="special-roles-config"
+                    style="display: none; background: rgba(255,215,0,0.1); padding: 15px; border-radius: 10px; margin: 10px 0;">
+                    <p style="color: #ffd700;">🎭 Escolha os papéis especiais:</p>
+
+                    <div style="margin: 10px 0;">
+                        <label>
+                            <input type="checkbox" id="use-commander" checked>
+                            👑 <strong>Comandante:</strong> Sabe quem são os espiões
+                        </label>
+                    </div>
+
+                    <div style="margin: 10px 0;">
+                        <label>
+                            <input type="checkbox" id="use-bodyguard">
+                            💂 <strong>Guarda-Costas:</strong> Protege o Comandante
+                        </label>
+                    </div>
+
+                    <div style="margin: 10px 0;">
+                        <label>
+                            <input type="checkbox" id="use-false-commander">
+                            🎭 <strong>Falso Comandante:</strong> Espião que se passa por Comandante
+                        </label>
+                    </div>
+                </div>
+
+                <button onclick="startGame()">Iniciar Jogo</button>
+            </div>
+        </div>
+
+        <!-- Tela de Distribuição de Papéis -->
+        <div id="role-screen" class="screen" style="display: none;">
+            <h2>Seu Papel Secreto</h2>
+            <div id="role-reveal">
+                <p>Jogador: <span id="current-player-name"></span></p>
+                <p>Seu papel é: <strong id="current-player-role"></strong></p>
+                <p id="role-description"></p>
+            </div>
+            <button onclick="revealNextRole()">Próximo Jogador</button>
+        </div>
+
+        <!-- Tela do Jogo -->
+        <div id="game-screen" class="screen" style="display: none;">
+            <div class="game-info">
+                <h3>Missão <span id="mission-number">1</span> de 5</h3>
+                <p>Placar: Resistência <span id="resistance-score">0</span> - <span id="spy-score">0</span> Espiões</p>
+            </div>
+
+            <div id="leader-section">
+                <h3>Líder: <span id="leader-name"></span></h3>
+                <p>Escolha <span id="team-size"></span> jogadores para a missão:</p>
+                <div id="team-selection"></div>
+                <button id="confirm-team-btn" onclick="confirmTeam()" style="display: none;">Confirmar Equipe</button>
+            </div>
+
+            <div id="voting-section" style="display: none;"></div>
+            <div id="mission-section" style="display: none;"></div>
+
+            <div id="results-section" style="display: none;">
+                <h3>Resultado da Missão</h3>
+                <p id="mission-result-text"></p>
+                <div id="mission-cards"></div>
+                <button onclick="nextRound()">Próxima Rodada</button>
+            </div>
+        </div>
+
+        <!-- Tela de Fim de Jogo -->
+        <div id="end-screen" class="screen" style="display: none;">
+            <h2 id="end-message"></h2>
+            <div id="role-reveal-all"></div>
+            <button onclick="resetGame()">Jogar Novamente</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+
+</html>
